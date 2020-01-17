@@ -9,15 +9,20 @@ const tplPath = path.join(__dirname, '../template/dir.html')
 const source = fs.readFileSync(tplPath, { encoding: 'utf8' })
 const template = handlebars.compile(source)
 const mime = require('../help/mime')
+const compress = require('../help/compress')
+
 
 module.exports = async function (req, res, filePath) {
   try {
-    const contentType = mime(filePath)
     const stats = await stat(filePath)
     if (stats.isFile()) {
       res.statusCode = 200
-      res.setHeader('Content-Type', contentType)
-      fs.createReadStream(filePath).pipe(res)
+      res.setHeader('Content-Type', mime(filePath))
+      let rs = fs.createReadStream(filePath)
+      if (filePath.match(conf.compress)) {
+        rs = compress(rs, req, res)
+      }
+      rs.pipe(res)
     } else if (stats.isDirectory()) {
       const files = await readdir(filePath)
       res.statusCode = 200
@@ -28,7 +33,6 @@ module.exports = async function (req, res, filePath) {
         dir: dir ? `/${dir}` : '',
         files
       }
-      console.log('data ', data)
       res.end(template(data))
     }
   } catch (ex) {
