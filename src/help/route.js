@@ -10,6 +10,7 @@ const source = fs.readFileSync(tplPath, { encoding: 'utf8' })
 const template = handlebars.compile(source)
 const mime = require('../help/mime')
 const compress = require('../help/compress')
+const range = require('./range')
 
 
 module.exports = async function (req, res, filePath) {
@@ -18,7 +19,13 @@ module.exports = async function (req, res, filePath) {
     if (stats.isFile()) {
       res.statusCode = 200
       res.setHeader('Content-Type', mime(filePath))
-      let rs = fs.createReadStream(filePath)
+      let rs
+      const {code, start, end} = range(stats.size, req, res)
+      if (code === 200) {
+        rs = fs.createReadStream(filePath)
+      } else {
+        rs = fs.createReadStream(filePath, {start, end})
+      }
       if (filePath.match(conf.compress)) {
         rs = compress(rs, req, res)
       }
