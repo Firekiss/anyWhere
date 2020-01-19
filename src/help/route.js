@@ -11,14 +11,21 @@ const template = handlebars.compile(source)
 const mime = require('../help/mime')
 const compress = require('../help/compress')
 const range = require('./range')
-
+const isRefresh = require('./cache')
 
 module.exports = async function (req, res, filePath) {
   try {
     const stats = await stat(filePath)
     if (stats.isFile()) {
-      res.statusCode = 200
+      // 协商缓存判断
+      if (isRefresh(stats, req, res)) {
+        res.statusCode = 304
+        res.end()
+        return
+      }
+
       res.setHeader('Content-Type', mime(filePath))
+      res.statusCode = 200
       let rs
       const {code, start, end} = range(stats.size, req, res)
       if (code === 200) {
@@ -43,6 +50,7 @@ module.exports = async function (req, res, filePath) {
       res.end(template(data))
     }
   } catch (ex) {
+    console.log('ex >>>>>', ex)
     res.statusCode = 404
     res.setHeader('Content-Type', 'text/plain')
     res.end(`${filePath} is not a directory or file!`)
