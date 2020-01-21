@@ -1,8 +1,11 @@
 {
   "name": "anywhere",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "NodeJs静态资源服务项目",
-  "main": "index.js",
+  "main": "src/app.js",
+  "bin": {
+    "anyServer": "bin/anyServer"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -18,6 +21,7 @@
   "homepage": "https://github.com/Firekiss/anyWhere#readme",
   "dependencies": {
     "chalk": "^3.0.0",
-    "handlebars": "^4.7.2"
+    "handlebars": "^4.7.2",
+    "yargs": "^15.1.0"
   }
 }

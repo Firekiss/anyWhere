@@ -4,7 +4,6 @@ const path = require('path')
 const stat = promisify(fs.stat)
 const readdir = promisify(fs.readdir)
 const handlebars = require('handlebars')
-const conf = require('../config/defaultConf')
 const tplPath = path.join(__dirname, '../template/dir.html')
 const source = fs.readFileSync(tplPath, { encoding: 'utf8' })
 const template = handlebars.compile(source)
@@ -13,17 +12,19 @@ const compress = require('../help/compress')
 const range = require('./range')
 const isRefresh = require('./cache')
 
-module.exports = async function (req, res, filePath) {
+module.exports = async function (req, res, filePath, conf) {
   try {
     const stats = await stat(filePath)
     if (stats.isFile()) {
       // 协商缓存判断
-      if (isRefresh(stats, req, res)) {
+      if (!isRefresh(stats, req, res)) {
+        console.log('服务端没有更新文件')
         res.statusCode = 304
         res.end()
         return
       }
 
+      console.log('服务端返回最新文件')
       res.setHeader('Content-Type', mime(filePath))
       res.statusCode = 200
       let rs

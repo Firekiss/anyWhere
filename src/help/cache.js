@@ -24,6 +24,7 @@ module.exports = function isRefresh(stats, req, res) {
   refreshResCache(stats, res)
 
   // 获取浏览器带过来的 最后更新时间和etag
+  console.log('headers', req.headers)
   const lastModified = req.headers['if-modified-since']
   const etag = req.headers['if-none-match']
 
